@@ -10,6 +10,7 @@ namespace Psd2uGui.Editor
     public class ConvertEditor : EditorWindow
     {
         static Dictionary<string, Layer[]> groups;
+        Vector2 scrollPosition;
 
         [MenuItem("Convert/Convert")]
         static void Open()
@@ -23,12 +24,16 @@ namespace Psd2uGui.Editor
 
         private void OnGUI()
         {
-            foreach (var group in groups)
+            using (var scope = new EditorGUILayout.ScrollViewScope(scrollPosition))
             {
-                foreach (var layer in group.Value)
+                foreach (var group in groups)
                 {
-                    EditorGUILayout.LabelField(string.Format("{0}/{1}", group.Key, layer.Name));
+                    foreach (var layer in group.Value)
+                    {
+                        layer.Visible = EditorGUILayout.ToggleLeft(string.Format(" {0}/{1}", group.Key, layer.Name), layer.Visible);
+                    }
                 }
+                scrollPosition = scope.scrollPosition;
             }
 
             if (GUILayout.Button("Convert"))
@@ -36,6 +41,10 @@ namespace Psd2uGui.Editor
                 var textures = new Dictionary<string, Texture2D>();
                 foreach (var layer in groups.SelectMany(x => x.Value))
                 {
+                    if (!layer.Visible || layer.Rect == Rect.zero)
+                    {
+                        continue;
+                    }
                     if (layer.AdditionalInfo.Any(x => x is TextLayerInfo))
                     {
                         continue;
