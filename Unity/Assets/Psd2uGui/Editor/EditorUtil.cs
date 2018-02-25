@@ -64,19 +64,23 @@ namespace Psd2uGui.Editor
 
         public static Sprite[] SaveAssets(string saveFolderPath, Layer[] layers)
         {
-            List<Sprite> atlas = new List<Sprite>();
+            var atlas = new List<Sprite>();
+            var effectiveLayers = new List<Layer>();
 
             foreach (var layer in layers)
             {
-                var sprite = atlas.FirstOrDefault(x => string.Equals(x.name, layer.Name));
-                if (sprite != null)
+                var old = effectiveLayers.FirstOrDefault(x => x.Name == layer.Name);
+                if(old != null && (old.Rect.width < layer.Rect.width || old.Rect.height < layer.Rect.height))
                 {
-                    if (sprite.rect.width < layer.Rect.width || sprite.rect.height < layer.Rect.height)
-                    {
-                        atlas.Remove(sprite);
-                    }
+                    effectiveLayers.Remove(old);
+                    effectiveLayers.Add(layer);
                 }
-                sprite = SaveAsset(string.Format("{0}/{1}.png", saveFolderPath, layer.Name), CreateTexture(layer));
+                effectiveLayers.Add(layer);
+            }
+
+            foreach (var layer in effectiveLayers)
+            {
+                var sprite = SaveAsset(string.Format("{0}/{1}.png", saveFolderPath, layer.Name), CreateTexture(layer));
                 atlas.Add(sprite);
             }
 

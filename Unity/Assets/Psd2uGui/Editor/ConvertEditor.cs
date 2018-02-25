@@ -159,7 +159,7 @@ namespace Psd2uGui.Editor
                 var key = layer.Value;
                 if (key.StartsWith(originTexture.name, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    key = key.Remove(0, originTexture.name.Length + 1);
+                    key = key.Remove(0, originTexture.name.Length);
                 }
                 if (!layerGroups.ContainsKey(key))
                 {
