@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -175,8 +175,6 @@ namespace Psd2uGui.Editor
                 var posX = (component.Rect.min.x + component.Rect.width / 2f);
                 var posY = originSize.y - (component.Rect.min.y + component.Rect.height / 2f);
                 var rect = GetOrCreateTransform(root.transform, component.Path, component.Name, new Vector2(posX, posY));
-
-                rect.sizeDelta = component.Rect.size;
 
                 component.Create(rect);
             }

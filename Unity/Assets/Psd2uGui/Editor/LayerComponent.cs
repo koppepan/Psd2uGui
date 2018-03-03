@@ -55,7 +55,7 @@ namespace Psd2uGui.Editor
 
             text.raycastTarget = false;
 
-            rect.sizeDelta += Vector2.one * 10;
+            rect.sizeDelta = new Vector2(text.preferredWidth, text.preferredHeight);
         }
     }
 
@@ -75,6 +75,8 @@ namespace Psd2uGui.Editor
             image.sprite = sprite;
             image.raycastTarget = false;
             image.SetNativeSize();
+
+            rect.sizeDelta = Rect.size;
         }
     }
 
@@ -102,7 +104,6 @@ namespace Psd2uGui.Editor
             var image = rect.gameObject.AddComponent<UnityEngine.UI.Image>();
             image.sprite = normal;
             image.raycastTarget = true;
-            image.SetNativeSize();
 
             var button = rect.gameObject.AddComponent<UnityEngine.UI.Button>();
             if (highlighted != null || pressed != null || disabled != null)
@@ -115,6 +116,8 @@ namespace Psd2uGui.Editor
                     disabledSprite = disabled
                 };
             }
+
+            rect.sizeDelta = Rect.size;
         }
     }
 }
