@@ -55,6 +55,8 @@ namespace Psd2uGui.Editor
 
             text.raycastTarget = false;
 
+            // 2回セットしないと正しいサイズにならない
+            rect.sizeDelta = new Vector2(text.preferredWidth, text.preferredHeight);
             rect.sizeDelta = new Vector2(text.preferredWidth, text.preferredHeight);
         }
     }
