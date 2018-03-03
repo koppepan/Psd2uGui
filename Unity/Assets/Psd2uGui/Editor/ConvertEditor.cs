@@ -11,8 +11,20 @@ namespace Psd2uGui.Editor
 {
     internal class ConvertEditor : EditorWindow
     {
-        public Texture2D originTexture;
-        private Vector2 originSize;
+        private Texture2D originTexture;
+        private PsdFile originPsd;
+
+        private Vector2 originSize
+        {
+            get
+            {
+                if(originPsd == null)
+                {
+                    return Vector2.zero;
+                }
+                return originPsd.BaseLayer.Rect.size;
+            }
+        }
 
         Dictionary<Layer, string> visibleLayers = new Dictionary<Layer, string>();
 
@@ -45,6 +57,7 @@ namespace Psd2uGui.Editor
         {
             var win = GetWindow<ConvertEditor>("Psd2uGui");
             win.originTexture = origin;
+            win.originPsd = null;
 
             win.Show();
         }
@@ -53,14 +66,12 @@ namespace Psd2uGui.Editor
         {
             EditorGUI.BeginChangeCheck();
             originTexture = (Texture2D)EditorGUILayout.ObjectField("psd", originTexture, typeof(Texture2D), true);
-            if (EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck() || (originTexture != null && originPsd == null))
             {
                 var path = Application.dataPath.Split('/');
                 path[path.Length - 1] = AssetDatabase.GetAssetPath(originTexture);
-                var psd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
-
-                originSize = psd.BaseLayer.Rect.size;
-                visibleLayers = GetHierarchyPath(psd);
+                originPsd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
+                visibleLayers = GetHierarchyPath(originPsd);
             }
 
             if (!visibleLayers.Any())
@@ -172,8 +183,8 @@ namespace Psd2uGui.Editor
 
             foreach (var component in components)
             {
-                var posX = (component.Rect.min.x + component.Rect.width / 2f);
-                var posY = originSize.y - (component.Rect.min.y + component.Rect.height / 2f);
+                var posX = component.Rect.center.x;
+                var posY = originSize.y - component.Rect.center.y;
                 var rect = GetOrCreateTransform(root.transform, component.Path, component.Name, new Vector2(posX, posY));
 
                 component.Create(rect);
