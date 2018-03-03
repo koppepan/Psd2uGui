@@ -59,6 +59,15 @@ namespace Psd2uGui.Editor
             win.originTexture = origin;
             win.originPsd = null;
 
+            GameObject canvasObj = GameObject.Find("Canvas");
+
+            if (canvasObj == null)
+            {
+                canvasObj = new GameObject("Canvas");
+                var canvas = canvasObj.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            }
+
             win.Show();
         }
 
@@ -152,13 +161,6 @@ namespace Psd2uGui.Editor
         private void CreateGUI(Sprite[] sprites)
         {
             GameObject canvasObj = GameObject.Find("Canvas");
-
-            if (canvasObj == null)
-            {
-                canvasObj = new GameObject("Canvas");
-                var canvas = canvasObj.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            }
 
             var root = new GameObject(originTexture.name, typeof(RectTransform));
             root.transform.SetParent(canvasObj.transform, false);
