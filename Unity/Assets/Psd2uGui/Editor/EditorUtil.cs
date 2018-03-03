@@ -26,7 +26,7 @@ namespace Psd2uGui.Editor
         {
             List<LayerComponent> components = new List<LayerComponent>();
 
-            var groupName = path.Split('/').Length > 1 ? path.Split('/').Last() : "";
+            var groupName = path.Contains("/") ? path.Split('/').Last() : path;
 
             if (!string.IsNullOrEmpty(groupName))
             {
@@ -36,7 +36,7 @@ namespace Psd2uGui.Editor
                     if (buttons.Any())
                     {
                         var buttonSprites = sprites.Where(x => buttons.Any(y => string.Equals(x.name, y.Name, StringComparison.CurrentCultureIgnoreCase))).ToArray();
-                        components.Add(new ButtonLayerComponent(groupName, path.Remove(path.Length - (groupName.Length + 1)), buttons.First().Rect, buttonSprites));
+                        components.Add(new ButtonLayerComponent(groupName, path.Remove(path.Length - (groupName.Length)), buttons.First().Rect, buttonSprites));
 
                         foreach (var b in buttons)
                         {
