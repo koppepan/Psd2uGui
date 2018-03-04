@@ -9,60 +9,9 @@ using PhotoshopFile;
 
 namespace Psd2uGui.Editor
 {
-    internal static class EditorUtil
+    static class EditorUtil
     {
-
-        public static List<LayerComponent> ConvertLayerComponents(Dictionary<string, List<Layer>> groups, Sprite[] sprites)
-        {
-            IEnumerable<LayerComponent> components = new List<LayerComponent>();
-            foreach (var pair in groups)
-            {
-                components = components.Concat(ConvertLayers(pair.Key, new List<Layer>(pair.Value), sprites));
-            }
-            return components.ToList();
-        }
-
-        static IEnumerable<LayerComponent> ConvertLayers(string path, List<Layer> layers, Sprite[] sprites)
-        {
-            List<LayerComponent> components = new List<LayerComponent>();
-
-            var groupName = path.Contains("/") ? path.Split('/').Last() : path;
-
-            if (!string.IsNullOrEmpty(groupName))
-            {
-                if (Regex.IsMatch(groupName.ToLower(), "button_.*"))
-                {
-                    var buttons = layers.Where(x => Regex.IsMatch(x.Name.ToLower(), ".*button_.*")).ToArray();
-                    if (buttons.Any())
-                    {
-                        var buttonSprites = sprites.Where(x => buttons.Any(y => string.Equals(x.name, y.Name, StringComparison.CurrentCultureIgnoreCase))).ToArray();
-                        components.Add(new ButtonLayerComponent(groupName, path.Remove(path.Length - (groupName.Length)), buttons.First().Rect, buttonSprites));
-
-                        foreach (var b in buttons)
-                        {
-                            layers.Remove(b);
-                        }
-                    }
-                }
-            }
-
-            foreach (var layer in layers)
-            {
-                if (Regex.IsMatch(layer.Name.ToLower(), "label_.*"))
-                {
-                    components.Add(new TextLayerComponent(layer.Name, path, layer));
-                }
-                else
-                {
-                    var sprite = sprites.FirstOrDefault(x => string.Equals(x.name, layer.Name, StringComparison.CurrentCultureIgnoreCase));
-                    components.Add(new ImageLayerComponent(layer.Name, path, layer.Rect, sprite));
-                }
-            }
-
-            return components;
-        }
-
-        public static Sprite[] SaveAssets(string saveFolderPath, Layer[] layers)
+        public static Sprite[] SaveAssets(string saveFolderPath, IEnumerable<Layer> layers)
         {
             var atlas = new List<Sprite>();
             var effectiveLayers = new List<Layer>();
@@ -70,7 +19,7 @@ namespace Psd2uGui.Editor
             foreach (var layer in layers)
             {
                 var old = effectiveLayers.FirstOrDefault(x => x.Name == layer.Name);
-                if(old != null && (old.Rect.width < layer.Rect.width || old.Rect.height < layer.Rect.height))
+                if (old != null && (old.Rect.width < layer.Rect.width || old.Rect.height < layer.Rect.height))
                 {
                     effectiveLayers.Remove(old);
                     effectiveLayers.Add(layer);

@@ -9,7 +9,7 @@ using PhotoshopFile;
 
 namespace Psd2uGui.Editor
 {
-    internal class ConvertEditor : EditorWindow
+    class ConvertEditor : EditorWindow
     {
         private Texture2D originTexture;
         private PsdFile originPsd;
@@ -18,7 +18,7 @@ namespace Psd2uGui.Editor
         {
             get
             {
-                if(originPsd == null)
+                if (originPsd == null)
                 {
                     return Vector2.zero;
                 }
@@ -43,7 +43,7 @@ namespace Psd2uGui.Editor
             {
                 return false;
             }
-            return AssetDatabase.GetAssetPath(Selection.objects[0]).EndsWith(".psd",  StringComparison.CurrentCultureIgnoreCase);
+            return AssetDatabase.GetAssetPath(Selection.objects[0]).EndsWith(".psd", StringComparison.CurrentCultureIgnoreCase);
         }
 
         [MenuItem("Assets/Convert to uGUI", false, 20000)]
@@ -116,7 +116,7 @@ namespace Psd2uGui.Editor
                         return false;
                     }
                     return true;
-                }).ToArray();
+                });
                 CreateGUI(EditorUtil.SaveAssets("Assets/GUI", layers));
             }
         }
@@ -166,22 +166,7 @@ namespace Psd2uGui.Editor
             root.transform.SetParent(canvasObj.transform, false);
             root.GetComponent<RectTransform>().sizeDelta = originSize;
 
-            var layerGroups = new Dictionary<string, List<Layer>>();
-            foreach (var layer in visibleLayers)
-            {
-                var key = layer.Value;
-                if (key.StartsWith(originTexture.name, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    key = key.Remove(0, originTexture.name.Length);
-                }
-                if (!layerGroups.ContainsKey(key))
-                {
-                    layerGroups.Add(key, new List<Layer>());
-                }
-                layerGroups[key].Add(layer.Key);
-            }
-
-            var components = EditorUtil.ConvertLayerComponents(layerGroups, sprites);
+            var components = new Converter(sprites).ConvertLayerComponents(visibleLayers);
 
             foreach (var component in components)
             {

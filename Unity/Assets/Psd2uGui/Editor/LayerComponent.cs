@@ -6,7 +6,7 @@ using PhotoshopFile;
 
 namespace Psd2uGui.Editor
 {
-    internal abstract class LayerComponent
+    abstract class LayerComponent
     {
         public string Name
         {
@@ -23,7 +23,6 @@ namespace Psd2uGui.Editor
             get;
             private set;
         }
-        
 
         public LayerComponent(string name, string path, Rect rect)
         {
@@ -35,7 +34,7 @@ namespace Psd2uGui.Editor
         public abstract void Create(RectTransform rect);
     }
 
-    internal class TextLayerComponent : LayerComponent
+    class TextLayerComponent : LayerComponent
     {
         private TextLayerInfo textInfo;
 
@@ -61,7 +60,7 @@ namespace Psd2uGui.Editor
         }
     }
 
-    internal class ImageLayerComponent : LayerComponent
+    class ImageLayerComponent : LayerComponent
     {
         Sprite sprite;
 
@@ -82,23 +81,19 @@ namespace Psd2uGui.Editor
         }
     }
 
-    internal class ButtonLayerComponent : LayerComponent
+    class ButtonLayerComponent : LayerComponent
     {
         Sprite normal;
         Sprite highlighted;
         Sprite pressed;
         Sprite disabled;
 
-        public ButtonLayerComponent(string name, string path, Rect rect, Sprite[] sprites) : base(name, path, rect)
+        public ButtonLayerComponent(string name, string path, Rect rect, Sprite normal, Sprite pressed, Sprite highlighted, Sprite disabled) : base(name, path, rect)
         {
-            normal = sprites.FirstOrDefault(x =>
-            {
-                var lower = x.name.ToLower();
-                return !lower.EndsWith("highlighted") && !lower.EndsWith("pressed") && !lower.EndsWith("disabled");
-            });
-            highlighted = sprites.FirstOrDefault(x => x.name.ToLower().EndsWith("highlighted"));
-            pressed = sprites.FirstOrDefault(x => x.name.ToLower().EndsWith("pressed"));
-            disabled = sprites.FirstOrDefault(x => x.name.ToLower().EndsWith("disabled"));
+            this.normal = normal;
+            this.pressed = pressed;
+            this.highlighted = highlighted;
+            this.disabled = disabled;
         }
 
         public override void Create(RectTransform rect)
