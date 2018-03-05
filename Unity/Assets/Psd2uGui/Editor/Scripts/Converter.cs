@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,18 +9,14 @@ namespace Psd2uGui.Editor
 {
     class Converter
     {
-        const string buttonKey = ".*button.*";
-        const string buttonPressedKey = ".*pressed";
-        const string buttonHighlightedKye = ".*highlighted";
-        const string buttonDisabledKey = ".*disabled";
-
-        const string labelPrefix = "label_.*";
+        ConvertParameter param;
 
         Sprite[] sprites;
         List<LayerComponent> components;
 
-        public Converter(Sprite[] sprites)
+        public Converter(ConvertParameter param, Sprite[] sprites)
         {
+            this.param = param;
             this.sprites = sprites;
         }
 
@@ -60,16 +56,16 @@ namespace Psd2uGui.Editor
         {
             var groupName = path.Contains("/") ? path.Split('/').Last() : path;
 
-            if (Regex.IsMatch(groupName.ToLower(), buttonKey))
+            if (Regex.IsMatch(groupName.ToLower(), param.buttonKey))
             {
                 CreateButtonComponent(path, groupName, ref layers);
             }
 
             foreach (var layer in layers)
             {
-                if (Regex.IsMatch(layer.Name.ToLower(), labelPrefix))
+                if (Regex.IsMatch(layer.Name.ToLower(), param.labelKey))
                 {
-                    components.Add(new TextLayerComponent(layer.Name, path, layer));
+                    components.Add(new TextLayerComponent(layer.Name, path, layer, param.defaultFont));
                 }
                 else
                 {
@@ -81,15 +77,15 @@ namespace Psd2uGui.Editor
 
         void CreateButtonComponent(string path, string groupName, ref List<Layer> layers)
         {
-            var buttons = layers.Where(x => Regex.IsMatch(x.Name.ToLower(), buttonKey)).ToArray();
+            var buttons = layers.Where(x => Regex.IsMatch(x.Name.ToLower(), param.buttonKey)).ToArray();
             if (!buttons.Any())
             {
                 return;
             }
 
-            var pressd = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), buttonPressedKey));
-            var highlighted = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), buttonHighlightedKye));
-            var disabled = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), buttonDisabledKey));
+            var pressd = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.buttonPressedKey));
+            var highlighted = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.buttonHighlightedKye));
+            var disabled = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.buttonDisabledKey));
 
             var normal = buttons.FirstOrDefault(x =>
             {

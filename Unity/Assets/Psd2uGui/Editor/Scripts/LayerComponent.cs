@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -37,9 +37,11 @@ namespace Psd2uGui.Editor
     class TextLayerComponent : LayerComponent
     {
         private TextLayerInfo textInfo;
+        private Font font;
 
-        public TextLayerComponent(string name, string path, Layer layer) : base(name, path, layer.Rect)
+        public TextLayerComponent(string name, string path, Layer layer, Font font) : base(name, path, layer.Rect)
         {
+            this.font = font;
             textInfo = (TextLayerInfo)layer.AdditionalInfo.FirstOrDefault(x => x is TextLayerInfo);
         }
 
@@ -47,6 +49,7 @@ namespace Psd2uGui.Editor
         {
             var text = rect.gameObject.AddComponent<UnityEngine.UI.Text>();
 
+            text.font = font;
             text.text = textInfo.Text;
             text.fontSize = (int)textInfo.FontSize;
             text.color = textInfo.FillColor;

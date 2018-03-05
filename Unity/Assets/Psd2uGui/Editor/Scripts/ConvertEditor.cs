@@ -27,6 +27,7 @@ namespace Psd2uGui.Editor
         }
 
         Dictionary<Layer, string> visibleLayers = new Dictionary<Layer, string>();
+        ConvertParameter parameter;
 
         private Vector2 scrollPosition;
 
@@ -69,6 +70,18 @@ namespace Psd2uGui.Editor
             }
 
             win.Show();
+        }
+
+        private void OnEnable()
+        {
+            var path = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)).Split('/').ToList();
+            path.RemoveRange(path.Count - 2, 2);
+
+            parameter = AssetDatabase.LoadAssetAtPath<ConvertParameter>(string.Join("/", path.ToArray()) + "/ConvertParameter.asset");
+            if (parameter == null)
+            {
+                Debug.LogError("not found convert parameter asset.");
+            }
         }
 
         private void OnGUI()
@@ -162,11 +175,17 @@ namespace Psd2uGui.Editor
         {
             GameObject canvasObj = GameObject.Find("Canvas");
 
+            if (canvasObj == null)
+            {
+                Debug.LogError("not found canvas object.");
+                return;
+            }
+
             var root = new GameObject(originTexture.name, typeof(RectTransform));
             root.transform.SetParent(canvasObj.transform, false);
             root.GetComponent<RectTransform>().sizeDelta = originSize;
 
-            var components = new Converter(sprites).ConvertLayerComponents(visibleLayers);
+            var components = new Converter(parameter, sprites).ConvertLayerComponents(visibleLayers);
 
             foreach (var component in components)
             {
