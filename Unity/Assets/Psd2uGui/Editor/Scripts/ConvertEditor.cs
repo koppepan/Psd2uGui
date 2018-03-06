@@ -13,6 +13,7 @@ namespace Psd2uGui.Editor
     {
         private Texture2D originTexture;
         private PsdFile originPsd;
+        private Font fontData;
 
         private Vector2 originSize
         {
@@ -82,12 +83,13 @@ namespace Psd2uGui.Editor
             {
                 Debug.LogError("not found convert parameter asset.");
             }
+            fontData = parameter.defaultFont;
         }
 
         private void OnGUI()
         {
             EditorGUI.BeginChangeCheck();
-            originTexture = (Texture2D)EditorGUILayout.ObjectField("psd", originTexture, typeof(Texture2D), true);
+            originTexture = (Texture2D)EditorGUILayout.ObjectField("psd", originTexture, typeof(Texture2D), false);
             if (EditorGUI.EndChangeCheck() || (originTexture != null && originPsd == null))
             {
                 if (!AssetDatabase.GetAssetPath(originTexture).EndsWith("psd"))
@@ -101,6 +103,8 @@ namespace Psd2uGui.Editor
                 originPsd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
                 visibleLayers = GetHierarchyPath(originPsd);
             }
+
+            fontData = (Font)EditorGUILayout.ObjectField("font", fontData, typeof(Font), false);
 
             if (!visibleLayers.Any())
             {
@@ -191,7 +195,7 @@ namespace Psd2uGui.Editor
             root.transform.SetParent(canvasObj.transform, false);
             root.GetComponent<RectTransform>().sizeDelta = originSize;
 
-            var components = new Converter(parameter, sprites).ConvertLayerComponents(visibleLayers);
+            var components = new Converter(parameter, sprites, fontData).ConvertLayerComponents(visibleLayers);
 
             foreach (var component in components)
             {

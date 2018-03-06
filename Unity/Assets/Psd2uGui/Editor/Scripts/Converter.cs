@@ -10,14 +10,16 @@ namespace Psd2uGui.Editor
     class Converter
     {
         ConvertParameter param;
+        Font fontData;
 
         Sprite[] sprites;
         List<LayerComponent> components;
 
-        public Converter(ConvertParameter param, Sprite[] sprites)
+        public Converter(ConvertParameter param, Sprite[] sprites, Font fontData)
         {
             this.param = param;
             this.sprites = sprites;
+            this.fontData = fontData;
         }
 
         Sprite GetOrDefaultSprite(Layer layer)
@@ -65,7 +67,7 @@ namespace Psd2uGui.Editor
             {
                 if (Regex.IsMatch(layer.Name.ToLower(), param.labelKey))
                 {
-                    components.Add(new TextLayerComponent(layer.Name, path, layer, param.defaultFont));
+                    components.Add(new TextLayerComponent(layer.Name, path, layer, fontData));
                 }
                 else
                 {
