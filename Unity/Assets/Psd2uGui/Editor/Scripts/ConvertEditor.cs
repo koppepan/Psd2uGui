@@ -49,7 +49,7 @@ namespace Psd2uGui.Editor
         }
 
         [MenuItem("Assets/Convert to uGUI", false, 20000)]
-        private static void Convert()
+        private static void OpenConvertEditor()
         {
             var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GetAssetPath(Selection.objects[0]));
             ShowWidnow(tex);
@@ -60,15 +60,6 @@ namespace Psd2uGui.Editor
             var win = GetWindow<ConvertEditor>("Psd2uGui");
             win.originTexture = origin;
             win.originPsd = null;
-
-            GameObject canvasObj = GameObject.Find("Canvas");
-
-            if (canvasObj == null)
-            {
-                canvasObj = new GameObject("Canvas");
-                var canvas = canvasObj.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            }
 
             win.Show();
         }
@@ -84,6 +75,14 @@ namespace Psd2uGui.Editor
                 Debug.LogError("not found convert parameter asset.");
             }
             fontData = parameter.defaultFont;
+
+            GameObject canvasObj = GameObject.Find("Canvas");
+            if (canvasObj == null)
+            {
+                canvasObj = new GameObject("Canvas");
+                var canvas = canvasObj.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            }
         }
 
         private void OnGUI()
@@ -92,19 +91,11 @@ namespace Psd2uGui.Editor
             originTexture = (Texture2D)EditorGUILayout.ObjectField("psd", originTexture, typeof(Texture2D), false);
             if (EditorGUI.EndChangeCheck() || (originTexture != null && originPsd == null))
             {
-                if (!AssetDatabase.GetAssetPath(originTexture).EndsWith("psd"))
-                {
-                    originTexture = null;
-                    Debug.LogError("it is not psd file.");
-                    return;
-                }
-                var path = Application.dataPath.Split('/');
-                path[path.Length - 1] = AssetDatabase.GetAssetPath(originTexture);
-                originPsd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
-                visibleLayers = GetHierarchyPath(originPsd);
+                UpdateOriginTexture();
             }
 
             fontData = (Font)EditorGUILayout.ObjectField("font", fontData, typeof(Font), false);
+            EditorGUILayout.Space();
 
             if (!visibleLayers.Any())
             {
@@ -123,24 +114,7 @@ namespace Psd2uGui.Editor
 
             if (GUILayout.Button("Convert"))
             {
-                if (!visibleLayers.Any())
-                {
-                    return;
-                }
-
-                var layers = visibleLayers.Keys.Where(x =>
-                {
-                    if ((int)x.Rect.width == 0 || (int)x.Rect.height == 0)
-                    {
-                        return false;
-                    }
-                    if (x.AdditionalInfo.Any(info => info is TextLayerInfo))
-                    {
-                        return false;
-                    }
-                    return true;
-                });
-                CreateGUI(EditorUtil.SaveAssets(parameter.textureSavePath, layers));
+                Convert();
             }
         }
 
@@ -179,6 +153,42 @@ namespace Psd2uGui.Editor
             }
 
             return dic.Reverse().ToDictionary(k => k.Key, v => v.Value);
+        }
+
+        private void UpdateOriginTexture()
+        {
+            if (!AssetDatabase.GetAssetPath(originTexture).EndsWith("psd"))
+            {
+                originTexture = null;
+                Debug.LogError("it is not psd file.");
+                return;
+            }
+            var path = Application.dataPath.Split('/');
+            path[path.Length - 1] = AssetDatabase.GetAssetPath(originTexture);
+            originPsd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
+            visibleLayers = GetHierarchyPath(originPsd);
+        }
+
+        private void Convert()
+        {
+            if (!visibleLayers.Any())
+            {
+                return;
+            }
+
+            var layers = visibleLayers.Keys.Where(x =>
+            {
+                if ((int)x.Rect.width == 0 || (int)x.Rect.height == 0)
+                {
+                    return false;
+                }
+                if (x.AdditionalInfo.Any(info => info is TextLayerInfo))
+                {
+                    return false;
+                }
+                return x.Visible;
+            });
+            CreateGUI(EditorUtil.SaveAssets(parameter.textureSavePath, layers));
         }
 
         private void CreateGUI(Sprite[] sprites)
