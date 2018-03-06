@@ -62,6 +62,10 @@ namespace Psd2uGui.Editor
             {
                 CreateButtonComponent(path, groupName, ref layers);
             }
+            if (Regex.IsMatch(groupName.ToLower(), param.toggleKey))
+            {
+                CreateToggleComponent(path, groupName, ref layers);
+            }
 
             foreach (var layer in layers)
             {
@@ -110,6 +114,24 @@ namespace Psd2uGui.Editor
             {
                 layers.Remove(b);
             }
+        }
+
+        void CreateToggleComponent(string path, string groupName, ref List<Layer> layers)
+        {
+            var background = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.toggleBackground));
+            var checkmark = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.toggleCheckmark));
+
+            var component = new ToggleLayerComponent(
+                groupName,
+                path.Remove(path.Length - groupName.Length),
+                background.Rect,
+                GetOrDefaultSprite(background),
+                GetOrDefaultSprite(checkmark));
+
+            components.Add(component);
+
+            layers.Remove(background);
+            layers.Remove(checkmark);
         }
     }
 }

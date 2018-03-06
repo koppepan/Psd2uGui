@@ -120,4 +120,37 @@ namespace Psd2uGui.Editor
             rect.sizeDelta = Rect.size;
         }
     }
+
+    class ToggleLayerComponent : LayerComponent
+    {
+        Sprite background;
+        Sprite checkmark;
+
+        public ToggleLayerComponent(string name, string path, Rect rect, Sprite background, Sprite checkmark) : base(name, path, rect)
+        {
+            this.background = background;
+            this.checkmark = checkmark;
+        }
+
+        public override void Create(RectTransform rect)
+        {
+            var back = rect.gameObject.AddComponent<UnityEngine.UI.Image>();
+            back.sprite = background;
+            back.raycastTarget = true;
+
+            var check = new GameObject(checkmark.name, typeof(RectTransform)).AddComponent<UnityEngine.UI.Image>();
+            check.transform.SetParent(rect, false);
+            check.sprite = checkmark;
+            check.raycastTarget = false;
+            check.SetNativeSize();
+
+            var toggle = rect.gameObject.AddComponent<UnityEngine.UI.Toggle>();
+            toggle.isOn = true;
+            toggle.targetGraphic = back;
+            toggle.graphic = check;
+
+            rect.sizeDelta = Rect.size;
+        }
+    }
+
 }
