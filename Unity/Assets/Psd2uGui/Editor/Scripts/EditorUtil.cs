@@ -29,7 +29,13 @@ namespace Psd2uGui.Editor
 
             foreach (var layer in effectiveLayers)
             {
-                var sprite = SaveAsset(string.Format("{0}/{1}.png", saveFolderPath, layer.Name), CreateTexture(layer));
+                var path = string.Format("{0}/{1}.png", saveFolderPath, layer.Name);
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (sprite == null
+                    || (sprite.border == Vector4.zero && (sprite.rect.width < layer.Rect.width || sprite.rect.height < layer.Rect.height)))
+                {
+                    sprite = SaveAsset(string.Format("{0}/{1}.png", saveFolderPath, layer.Name), CreateTexture(layer));
+                }
                 atlas.Add(sprite);
             }
 
