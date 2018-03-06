@@ -130,7 +130,7 @@ namespace Psd2uGui.Editor
                     }
                     return true;
                 });
-                CreateGUI(EditorUtil.SaveAssets("Assets/GUI", layers));
+                CreateGUI(EditorUtil.SaveAssets(parameter.textureSavePath, layers));
             }
         }
 

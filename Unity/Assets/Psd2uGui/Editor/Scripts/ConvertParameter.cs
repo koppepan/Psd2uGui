@@ -4,6 +4,7 @@ namespace Psd2uGui.Editor
 {
     class ConvertParameter : ScriptableObject
     {
+        public string textureSavePath = "Assets/GUI";
         public Font defaultFont = null;
 
         public string buttonKey = ".*button.*";
