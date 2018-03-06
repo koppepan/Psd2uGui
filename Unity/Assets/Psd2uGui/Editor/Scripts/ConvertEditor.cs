@@ -90,6 +90,12 @@ namespace Psd2uGui.Editor
             originTexture = (Texture2D)EditorGUILayout.ObjectField("psd", originTexture, typeof(Texture2D), true);
             if (EditorGUI.EndChangeCheck() || (originTexture != null && originPsd == null))
             {
+                if (!AssetDatabase.GetAssetPath(originTexture).EndsWith("psd"))
+                {
+                    originTexture = null;
+                    Debug.LogError("it is not psd file.");
+                    return;
+                }
                 var path = Application.dataPath.Split('/');
                 path[path.Length - 1] = AssetDatabase.GetAssetPath(originTexture);
                 originPsd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
