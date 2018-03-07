@@ -11,10 +11,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 675c511d06ad2e749b0a6e31f77fc527, type: 3}
   m_Name: ConvertParameter
   m_EditorClassIdentifier: 
+  textureSavePath: Assets/GUI
   defaultFont: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-  separator: _
-  buttonKey: .*button.*
-  buttonPressedKey: .*pressed
-  buttonHighlightedKye: .*highlighted
-  buttonDisabledKey: .*disabled
   labelKey: label_.*
+  Button:
+    Pattern: .*button.*
+    NormalPattern: .*button_.*(?!(pressed|highlighted|disabled))
+    PressedPattern: .*pressed
+    HighlightedPattern: .*highlighted
+    DisabledPattern: .*disabled
+  Toggle:
+    Pattern: .*toggle.*
+    BackgroundPattern: .*toggle_background
+    CheckmarkPattern: .*toggle_check
