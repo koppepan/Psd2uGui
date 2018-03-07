@@ -56,15 +56,29 @@ namespace Psd2uGui.Editor
 
         void ConvertLayers(string path, List<Layer> layers)
         {
-            var groupName = path.Contains("/") ? path.Split('/').Last() : path;
+            if (!string.IsNullOrEmpty(path))
+            {
+                var groupName = path.Contains("/") ? path.Split('/').Last() : path;
+                var groupPath = path.Length > 0 ? path.Remove(path.Length - groupName.Length) : path;
 
-            if (Regex.IsMatch(groupName.ToLower(), param.buttonKey))
-            {
-                CreateButtonComponent(path, groupName, ref layers);
-            }
-            if (Regex.IsMatch(groupName.ToLower(), param.toggleKey))
-            {
-                CreateToggleComponent(path, groupName, ref layers);
+                if (Regex.IsMatch(groupName.ToLower(), param.Button.Pattern))
+                {
+                    var list = layers.Where(x => Regex.IsMatch(x.Name.ToLower(), param.Button.Pattern)).ToList();
+                    if (list.Any())
+                    {
+                        components.Add(new ButtonLayerComponent(groupName, groupPath, list, param.Button, GetOrDefaultSprite));
+                        list.ForEach(x => layers.Remove(x));
+                    }
+                }
+                if (Regex.IsMatch(groupName.ToLower(), param.Toggle.Pattern))
+                {
+                    var list = layers.Where(x => Regex.IsMatch(x.Name.ToLower(), param.Toggle.Pattern)).ToList();
+                    if (list.Any())
+                    {
+                        components.Add(new ToggleLayerComponent(groupName, groupPath, list, param.Toggle, GetOrDefaultSprite));
+                        list.ForEach(x => layers.Remove(x));
+                    }
+                }
             }
 
             foreach (var layer in layers)
@@ -79,59 +93,6 @@ namespace Psd2uGui.Editor
                     components.Add(new ImageLayerComponent(layer.Name, path, layer.Rect, sprite));
                 }
             }
-        }
-
-        void CreateButtonComponent(string path, string groupName, ref List<Layer> layers)
-        {
-            var buttons = layers.Where(x => Regex.IsMatch(x.Name.ToLower(), param.buttonKey)).ToArray();
-            if (!buttons.Any())
-            {
-                return;
-            }
-
-            var pressd = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.buttonPressedKey));
-            var highlighted = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.buttonHighlightedKye));
-            var disabled = buttons.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.buttonDisabledKey));
-
-            var normal = buttons.FirstOrDefault(x =>
-            {
-                return x != pressd && x != highlighted && x != disabled;
-            });
-
-
-            var component = new ButtonLayerComponent(
-                groupName,
-                path.Remove(path.Length - groupName.Length),
-                normal.Rect,
-                GetOrDefaultSprite(normal),
-                GetOrDefaultSprite(pressd),
-                GetOrDefaultSprite(highlighted),
-                GetOrDefaultSprite(disabled));
-
-            components.Add(component);
-
-            foreach (var b in buttons)
-            {
-                layers.Remove(b);
-            }
-        }
-
-        void CreateToggleComponent(string path, string groupName, ref List<Layer> layers)
-        {
-            var background = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.toggleBackground));
-            var checkmark = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.toggleCheckmark));
-
-            var component = new ToggleLayerComponent(
-                groupName,
-                path.Remove(path.Length - groupName.Length),
-                background.Rect,
-                GetOrDefaultSprite(background),
-                GetOrDefaultSprite(checkmark));
-
-            components.Add(component);
-
-            layers.Remove(background);
-            layers.Remove(checkmark);
         }
     }
 }

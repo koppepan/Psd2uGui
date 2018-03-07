@@ -9,15 +9,26 @@ namespace Psd2uGui.Editor
 
         public string labelKey = "label_.*";
 
-        [Header("button")]
-        public string buttonKey = ".*button.*";
-        public string buttonPressedKey = ".*pressed";
-        public string buttonHighlightedKye = ".*highlighted";
-        public string buttonDisabledKey = ".*disabled";
+        public ButtonParameter Button;
+        public ToggleParameter Toggle;
+    }
 
-        [Header("toggle")]
-        public string toggleKey = ".*toggle.*";
-        public string toggleBackground = ".*toggle_background";
-        public string toggleCheckmark = ".*toggle_check";
+    [System.Serializable]
+    class ButtonParameter
+    {
+        public string Pattern = "";
+
+        public string NormalPattern = "";
+        public string PressedPattern = "";
+        public string HighlightedPattern = "";
+        public string DisabledPattern = "";
+    }
+
+    [System.Serializable]
+    class ToggleParameter
+    {
+        public string Pattern = "";
+        public string BackgroundPattern = "";
+        public string CheckmarkPattern = "";
     }
 }

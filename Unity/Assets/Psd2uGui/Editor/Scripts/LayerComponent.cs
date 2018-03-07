@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using PhotoshopFile;
 
@@ -24,7 +25,7 @@ namespace Psd2uGui.Editor
             private set;
         }
 
-        public LayerComponent(string name, string path, Rect rect)
+        protected void SetParameter(string name, string path, Rect rect)
         {
             Name = name;
             Path = path;
@@ -39,8 +40,10 @@ namespace Psd2uGui.Editor
         private TextLayerInfo textInfo;
         private Font font;
 
-        public TextLayerComponent(string name, string path, Layer layer, Font font) : base(name, path, layer.Rect)
+        public TextLayerComponent(string name, string path, Layer layer, Font font)
         {
+            SetParameter(name, path, layer.Rect);
+
             this.font = font;
             textInfo = (TextLayerInfo)layer.AdditionalInfo.FirstOrDefault(x => x is TextLayerInfo);
         }
@@ -67,8 +70,9 @@ namespace Psd2uGui.Editor
     {
         Sprite sprite;
 
-        public ImageLayerComponent(string name, string path, Rect rect, Sprite sprite) : base(name, path, rect)
+        public ImageLayerComponent(string name, string path, Rect rect, Sprite sprite)
         {
+            SetParameter(name, path, rect);
             this.sprite = sprite;
         }
 
@@ -91,12 +95,19 @@ namespace Psd2uGui.Editor
         Sprite pressed;
         Sprite disabled;
 
-        public ButtonLayerComponent(string name, string path, Rect rect, Sprite normal, Sprite pressed, Sprite highlighted, Sprite disabled) : base(name, path, rect)
+        public ButtonLayerComponent(string name, string path, IEnumerable<Layer> layers, ButtonParameter param, Func<Layer, Sprite> getSprite)
         {
-            this.normal = normal;
-            this.pressed = pressed;
-            this.highlighted = highlighted;
-            this.disabled = disabled;
+            var n = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.NormalPattern));
+            var p = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.PressedPattern));
+            var h = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.HighlightedPattern));
+            var d = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.DisabledPattern));
+
+            normal = getSprite(n);
+            highlighted = getSprite(h);
+            pressed = getSprite(p);
+            disabled = getSprite(d);
+
+            SetParameter(name, path, n.Rect);
         }
 
         public override void Create(RectTransform rect)
@@ -126,10 +137,15 @@ namespace Psd2uGui.Editor
         Sprite background;
         Sprite checkmark;
 
-        public ToggleLayerComponent(string name, string path, Rect rect, Sprite background, Sprite checkmark) : base(name, path, rect)
+        public ToggleLayerComponent(string name, string path, IEnumerable<Layer> layers, ToggleParameter param, Func<Layer, Sprite> getSprite)
         {
-            this.background = background;
-            this.checkmark = checkmark;
+            var b = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.BackgroundPattern));
+            var c = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.CheckmarkPattern));
+
+            background = getSprite(b);
+            checkmark = getSprite(c);
+
+            SetParameter(name, path, b.Rect);
         }
 
         public override void Create(RectTransform rect)
