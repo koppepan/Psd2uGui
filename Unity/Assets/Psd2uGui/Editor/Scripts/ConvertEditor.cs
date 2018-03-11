@@ -27,10 +27,8 @@ namespace Psd2uGui.Editor
             }
         }
 
-        Dictionary<Layer, string> visibleLayers = new Dictionary<Layer, string>();
+        SaveAssetEditor saveEditor;
         ConvertParameter parameter;
-
-        private Vector2 scrollPosition;
 
         [MenuItem("Window/UI/Psd2uGui Converter")]
         static void Open()
@@ -97,63 +95,18 @@ namespace Psd2uGui.Editor
             fontData = (Font)EditorGUILayout.ObjectField("font", fontData, typeof(Font), false);
             EditorGUILayout.Space();
 
-            if (!visibleLayers.Any())
+            if(saveEditor != null)
             {
-                return;
-            }
-
-            using (var scope = new EditorGUILayout.ScrollViewScope(scrollPosition))
-            {
-                foreach (var pair in visibleLayers)
-                {
-                    var path = string.Format("{0}/{1}", pair.Value, pair.Key.Name);
-                    pair.Key.Visible = EditorGUILayout.ToggleLeft(path, pair.Key.Visible);
-                }
-                scrollPosition = scope.scrollPosition;
+                saveEditor.Draw();
             }
 
             if (GUILayout.Button("Convert"))
             {
                 Convert();
+                UpdateOriginTexture();
             }
         }
 
-
-        private Dictionary<Layer, string> GetHierarchyPath(PsdFile psd)
-        {
-            var dic = new Dictionary<Layer, string>();
-            var stack = new Stack<string>();
-
-            foreach (var layer in Enumerable.Reverse(psd.Layers))
-            {
-                var sectionInfo = (LayerSectionInfo)layer.AdditionalInfo.SingleOrDefault(x => x is LayerSectionInfo);
-                if (sectionInfo == null)
-                {
-                    if ((int)layer.Rect.width == 0 || (int)layer.Rect.height == 0)
-                    {
-                        continue;
-                    }
-                    dic.Add(layer, string.Join("/", stack.Reverse().ToArray()));
-                }
-                else
-                {
-                    switch (sectionInfo.SectionType)
-                    {
-                        case LayerSectionType.Layer:
-                        case LayerSectionType.OpenFolder:
-                        case LayerSectionType.ClosedFolder:
-                            stack.Push(layer.Name);
-                            break;
-
-                        case LayerSectionType.SectionDivider:
-                            stack.Pop();
-                            break;
-                    }
-                }
-            }
-
-            return dic.Reverse().ToDictionary(k => k.Key, v => v.Value);
-        }
 
         private void UpdateOriginTexture()
         {
@@ -166,32 +119,41 @@ namespace Psd2uGui.Editor
             var path = Application.dataPath.Split('/');
             path[path.Length - 1] = AssetDatabase.GetAssetPath(originTexture);
             originPsd = new PsdFile(string.Join("/", path), new LoadContext { Encoding = Encoding.Default });
-            visibleLayers = GetHierarchyPath(originPsd);
+
+            if(saveEditor != null)
+            {
+                saveEditor.Dispose();
+            }
+            saveEditor = new SaveAssetEditor(originPsd, parameter.textureSavePath);
         }
 
         private void Convert()
         {
-            if (!visibleLayers.Any())
-            {
-                return;
-            }
+            saveEditor.Save();
 
-            var layers = visibleLayers.Keys.Where(x =>
+            var layers = EditorUtil.GetHierarchyPath(originPsd);
+            layers.Where(x =>
             {
-                if ((int)x.Rect.width == 0 || (int)x.Rect.height == 0)
+                if(x.Key.AdditionalInfo.Any(info => info is LayerSectionInfo))
                 {
                     return false;
                 }
-                if (x.AdditionalInfo.Any(info => info is TextLayerInfo))
+                if(x.Key.Rect.width <= 0 || x.Key.Rect.height <= 0)
                 {
                     return false;
                 }
-                return x.Visible;
-            });
-            CreateGUI(EditorUtil.SaveAssets(parameter.textureSavePath, layers));
+                return x.Key.Visible;
+            }).ToDictionary(k => k, v => v);
+
+            var sprites = layers.Where(x => !x.Key.AdditionalInfo.Any(info => info is TextLayerInfo)).Select(x => x.Key.Name).Distinct().Select(x =>
+            {
+                return AssetDatabase.LoadAssetAtPath<Sprite>(EditorUtil.GetAssetPath(parameter.textureSavePath, x));
+            }).Where(x => x != null).ToArray();
+
+            CreateGUI(layers, sprites);
         }
 
-        private void CreateGUI(Sprite[] sprites)
+        private void CreateGUI(Dictionary<Layer, string> layers, Sprite[] sprites)
         {
             GameObject canvasObj = GameObject.Find("Canvas");
 
@@ -205,7 +167,7 @@ namespace Psd2uGui.Editor
             root.transform.SetParent(canvasObj.transform, false);
             root.GetComponent<RectTransform>().sizeDelta = originSize;
 
-            var components = new Converter(parameter, sprites, fontData).ConvertLayerComponents(visibleLayers);
+            var components = new Converter(parameter, sprites, fontData).ConvertLayerComponents(layers);
 
             foreach (var component in components)
             {

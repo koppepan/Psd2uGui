@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 using PhotoshopFile;
@@ -11,38 +10,52 @@ namespace Psd2uGui.Editor
 {
     static class EditorUtil
     {
-        public static Sprite[] SaveAssets(string saveFolderPath, IEnumerable<Layer> layers)
+        public static string GetAssetPath(string savePath, string name)
         {
-            var atlas = new List<Sprite>();
-            var effectiveLayers = new List<Layer>();
-
-            foreach (var layer in layers)
-            {
-                var old = effectiveLayers.FirstOrDefault(x => x.Name == layer.Name);
-                if (old != null && (old.Rect.width < layer.Rect.width || old.Rect.height < layer.Rect.height))
-                {
-                    effectiveLayers.Remove(old);
-                    effectiveLayers.Add(layer);
-                }
-                effectiveLayers.Add(layer);
-            }
-
-            foreach (var layer in effectiveLayers)
-            {
-                var path = string.Format("{0}/{1}.png", saveFolderPath, layer.Name);
-                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-                if (sprite == null
-                    || (sprite.border == Vector4.zero && (sprite.rect.width < layer.Rect.width || sprite.rect.height < layer.Rect.height)))
-                {
-                    sprite = SaveAsset(string.Format("{0}/{1}.png", saveFolderPath, layer.Name), CreateTexture(layer));
-                }
-                atlas.Add(sprite);
-            }
-
-            return atlas.ToArray();
+            return string.Format("{0}/{1}.png", savePath, name);
         }
 
-        static Sprite SaveAsset(string path, Texture2D tex)
+        public static Dictionary<Layer, string> GetHierarchyPath(PsdFile psd)
+        {
+            var dic = new Dictionary<Layer, string>();
+            var stack = new Stack<string>();
+
+            foreach (var layer in Enumerable.Reverse(psd.Layers))
+            {
+                var sectionInfo = (LayerSectionInfo)layer.AdditionalInfo.SingleOrDefault(x => x is LayerSectionInfo);
+                if (sectionInfo == null)
+                {
+                    if (!layer.Visible)
+                    {
+                        continue;
+                    }
+                    if ((int)layer.Rect.width == 0 || (int)layer.Rect.height == 0)
+                    {
+                        continue;
+                    }
+                    dic.Add(layer, string.Join("/", stack.Reverse().ToArray()));
+                }
+                else
+                {
+                    switch (sectionInfo.SectionType)
+                    {
+                        case LayerSectionType.Layer:
+                        case LayerSectionType.OpenFolder:
+                        case LayerSectionType.ClosedFolder:
+                            stack.Push(layer.Name);
+                            break;
+
+                        case LayerSectionType.SectionDivider:
+                            stack.Pop();
+                            break;
+                    }
+                }
+            }
+
+            return dic.Reverse().ToDictionary(k => k.Key, v => v.Value);
+        }
+
+        public static Sprite SaveAsset(string path, Texture2D tex)
         {
             FileInfo file = new FileInfo(path);
             if (!file.Directory.Exists)
@@ -66,7 +79,7 @@ namespace Psd2uGui.Editor
             return (Sprite)AssetDatabase.LoadAssetAtPath(path, typeof(Sprite));
         }
 
-        static Texture2D CreateTexture(Layer layer)
+        public static Texture2D CreateTexture(Layer layer)
         {
             if (!layer.Visible)
             {
