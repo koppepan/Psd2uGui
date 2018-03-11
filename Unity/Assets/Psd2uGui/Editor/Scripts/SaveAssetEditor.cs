@@ -70,14 +70,26 @@ namespace Psd2uGui.Editor
 
         public void Draw()
         {
-            using (var scope = new EditorGUILayout.ScrollViewScope(scrollPosition))
+            using (var scroll = new EditorGUILayout.ScrollViewScope(scrollPosition))
             {
                 foreach (var tmp in layers)
                 {
-                    EditorGUILayout.ToggleLeft(tmp.layer.Name, tmp.overWrite);
+                    bool exist = tmp.existTexture != null;
+
+                    using (var scope = new EditorGUILayout.HorizontalScope())
+                    {
+                        GUI.enabled = exist;
+                        tmp.overWrite = EditorGUILayout.ToggleLeft(tmp.layer.Name, tmp.overWrite);
+                        GUI.enabled = true;
+
+                        if(tmp.existTexture != null)
+                        {
+                            EditorGUILayout.ObjectField(tmp.existTexture, typeof(Sprite), false);
+                        }
+                    }
                 }
 
-                scrollPosition = scope.scrollPosition;
+                scrollPosition = scroll.scrollPosition;
             }
         }
 
