@@ -9,8 +9,8 @@ namespace Psd2uGui.Editor
 
         public string labelKey = "label_.*";
 
-        public ButtonParameter Button;
-        public ToggleParameter Toggle;
+        public ButtonParameter Button = null;
+        public ToggleParameter Toggle = null;
     }
 
     [System.Serializable]
