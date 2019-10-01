@@ -171,15 +171,15 @@ namespace Psd2uGui.Editor
 
             foreach (var component in components)
             {
-                var posX = component.Rect.center.x;
-                var posY = originSize.y - component.Rect.center.y;
+                var posX = component.Rect.center.x - originSize.x / 2f;
+                var posY = (originSize.y / 2f) - component.Rect.center.y;
                 var rect = GetOrCreateTransform(root.transform, component.Path, component.Name, new Vector2(posX, posY));
 
                 component.Create(rect);
             }
         }
 
-        private RectTransform GetOrCreateTransform(Transform parent, string hierarchyPath, string name, Vector3 position)
+        private RectTransform GetOrCreateTransform(Transform parent, string hierarchyPath, string name, Vector2 position)
         {
             Transform root = parent;
             var path = hierarchyPath.Split('/');
