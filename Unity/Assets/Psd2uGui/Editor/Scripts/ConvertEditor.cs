@@ -79,6 +79,13 @@ namespace Psd2uGui.Editor
         {
             EditorGUI.BeginChangeCheck();
             originTexture = (Texture2D)EditorGUILayout.ObjectField("psd", originTexture, typeof(Texture2D), false);
+
+            if (originTexture == null)
+            {
+                originPsd = null;
+                return;
+            }
+
             if (EditorGUI.EndChangeCheck() || (originTexture != null && originPsd == null))
             {
                 UpdateOriginTexture();
@@ -89,7 +96,7 @@ namespace Psd2uGui.Editor
 
             if(saveEditor != null)
             {
-                saveEditor.Draw();
+                saveEditor.Draw(position.position);
             }
 
             if (GUILayout.Button("Convert"))

@@ -74,7 +74,7 @@ namespace Psd2uGui.Editor
             layers.Clear();
         }
 
-        public void Draw()
+        public void Draw(Vector2 position)
         {
             using (var scroll = new EditorGUILayout.ScrollViewScope(scrollPosition))
             {
@@ -84,6 +84,10 @@ namespace Psd2uGui.Editor
 
                     using (var scope = new EditorGUILayout.HorizontalScope())
                     {
+                        if (GUILayout.Button("preview", GUILayout.Width(60)))
+                        {
+                            PreviewWindow.Open().Set(tmp.layer.Name, position, tmp.originTexture);
+                        }
                         GUI.enabled = exist;
                         tmp.overWrite = EditorGUILayout.ToggleLeft(tmp.layer.Name, tmp.overWrite);
                         GUI.enabled = true;
