@@ -50,7 +50,11 @@ namespace Psd2uGui.Editor
 
         public override void Create(RectTransform rect)
         {
-            var text = rect.gameObject.AddComponent<UnityEngine.UI.Text>();
+            var text = rect.gameObject.GetComponent<UnityEngine.UI.Text>();
+            if (text == null)
+            {
+                text = rect.gameObject.AddComponent<UnityEngine.UI.Text>();
+            }
 
             text.font = font;
             text.text = textInfo.Text;
@@ -78,7 +82,11 @@ namespace Psd2uGui.Editor
 
         public override void Create(RectTransform rect)
         {
-            var image = rect.gameObject.AddComponent<UnityEngine.UI.Image>();
+            var image = rect.gameObject.GetComponent<UnityEngine.UI.Image>();
+            if (image == null)
+            {
+                image = rect.gameObject.AddComponent<UnityEngine.UI.Image>();
+            }
 
             image.sprite = sprite;
             image.raycastTarget = false;

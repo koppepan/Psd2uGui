@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEditor;
 using PhotoshopFile;
 
@@ -73,14 +73,6 @@ namespace Psd2uGui.Editor
                 Debug.LogError("not found convert parameter asset.");
             }
             fontData = parameter.defaultFont;
-
-            GameObject canvasObj = GameObject.Find("Canvas");
-            if (canvasObj == null)
-            {
-                canvasObj = new GameObject("Canvas");
-                var canvas = canvasObj.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            }
         }
 
         private void OnGUI()
@@ -102,6 +94,18 @@ namespace Psd2uGui.Editor
 
             if (GUILayout.Button("Convert"))
             {
+                GameObject canvasObj = GameObject.Find("Canvas");
+                if (canvasObj == null)
+                {
+                    canvasObj = new GameObject("Canvas");
+                    var canvas = canvasObj.AddComponent<Canvas>();
+                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+                    var scalor = canvasObj.AddComponent<CanvasScaler>();
+                    scalor.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                    scalor.referenceResolution = originSize;
+                }
+
                 Convert();
                 UpdateOriginTexture();
             }
@@ -163,7 +167,12 @@ namespace Psd2uGui.Editor
                 return;
             }
 
-            var root = new GameObject(originTexture.name, typeof(RectTransform));
+            var root = GameObject.Find(originTexture.name);
+            if (root == null)
+            {
+                root = new GameObject(originTexture.name, typeof(RectTransform));
+            }
+
             root.transform.SetParent(canvasObj.transform, false);
             root.GetComponent<RectTransform>().sizeDelta = originSize;
 
@@ -189,33 +198,48 @@ namespace Psd2uGui.Editor
                 var t = root.Find(path[i]);
                 if (t == null)
                 {
-                    t = CreateTransform(root, path[i]);
+                    t = CreateTransform(root, path[i], Vector2.zero);
                 }
                 root = t;
             }
 
-            var obj = root.Find(name);
-            if (obj == null || obj.position != position)
+            var obj = FindTransform(root, name, position);
+            if (obj == null)
             {
-                obj = CreateTransform(root, name);
-                obj.position = position;
+                obj = CreateTransform(root, name, position);
             }
-
             return obj.GetComponent<RectTransform>();
         }
 
-        private Transform CreateTransform(Transform parent, string name)
+        private Transform CreateTransform(Transform parent, string name, Vector2 position)
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent, false);
+
             var rect = obj.AddComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one / 2f;
-            rect.anchoredPosition = Vector2.zero;
+            rect.anchoredPosition = position;
             rect.localScale = Vector3.one;
             rect.sizeDelta = Vector2.zero;
 
             return obj.transform;
         }
 
+        private Transform FindTransform(Transform root, string name, Vector2 position)
+        {
+            foreach (Transform t in root)
+            {
+                if (t.name != name)
+                {
+                    continue;
+                }
+                var rect = t.GetComponent<RectTransform>();
+                if (rect.anchoredPosition == position)
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
     }
 }
