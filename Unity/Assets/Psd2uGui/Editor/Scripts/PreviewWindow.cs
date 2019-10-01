@@ -19,8 +19,9 @@ namespace Psd2uGui.Editor
         {
             this.origin = origin;
 
-            this.title = title;
-            this.position = new Rect(position + Vector2.up * 50, this.position.size);
+            titleContent = new GUIContent(title);
+
+            this.position = new Rect(position, this.position.size);
             minSize = maxSize = new Vector2(origin.width, origin.height);
         }
 
