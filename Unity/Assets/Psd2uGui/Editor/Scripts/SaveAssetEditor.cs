@@ -44,12 +44,18 @@ namespace Psd2uGui.Editor
                 {
                     continue;
                 }
-                
-                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(EditorUtil.GetAssetPath(assetSavePath, layer.Name)); 
+
+                var origin = EditorUtil.CreateTexture(layer);
+                if (origin == null)
+                {
+                    continue;
+                }
+
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(EditorUtil.GetAssetPath(assetSavePath, layer.Name));
                 layers.Add(new TempLayer
                 {
                     layer = layer,
-                    originTexture = EditorUtil.CreateTexture(layer),
+                    originTexture = origin,
                     existTexture = sprite,
 
                     overWrite = sprite == null,
@@ -97,7 +103,7 @@ namespace Psd2uGui.Editor
         {
             foreach(var tmp in layers)
             {
-                if(tmp.overWrite)
+                if (tmp.overWrite)
                 {
                     var path = EditorUtil.GetAssetPath(assetSavePath, tmp.layer.Name);
                     EditorUtil.SaveAsset(path, tmp.originTexture);
