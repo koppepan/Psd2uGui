@@ -83,7 +83,8 @@ namespace Psd2uGui.Editor
 
             foreach (var layer in layers)
             {
-                if (Regex.IsMatch(layer.Name.ToLower(), param.labelKey))
+                //if (Regex.IsMatch(layer.Name.ToLower(), param.labelKey))
+                if(layer.AdditionalInfo.Any(info => info is TextLayerInfo))
                 {
                     components.Add(new TextLayerComponent(layer.Name, path, layer, fontData));
                 }
