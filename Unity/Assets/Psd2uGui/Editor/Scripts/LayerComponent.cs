@@ -7,7 +7,7 @@ using PhotoshopFile;
 
 namespace Psd2uGui.Editor
 {
-    abstract class LayerComponent
+    internal abstract class LayerComponent
     {
         public string Name
         {
@@ -25,7 +25,7 @@ namespace Psd2uGui.Editor
             private set;
         }
 
-        protected void SetParameter(string name, string path, Rect rect)
+        protected LayerComponent(string name, string path, Rect rect)
         {
             Name = name;
             Path = path;
@@ -35,15 +35,13 @@ namespace Psd2uGui.Editor
         public abstract void Create(RectTransform rect);
     }
 
-    class TextLayerComponent : LayerComponent
+    internal class TextLayerComponent : LayerComponent
     {
-        private TextLayerInfo textInfo;
-        private Font font;
+        private readonly TextLayerInfo textInfo;
+        private readonly Font font;
 
-        public TextLayerComponent(string name, string path, Layer layer, Font font)
+        public TextLayerComponent(string name, string path, Layer layer, Font font) : base(name, path, layer.Rect)
         {
-            SetParameter(name, path, layer.Rect);
-
             this.font = font;
             textInfo = (TextLayerInfo)layer.AdditionalInfo.FirstOrDefault(x => x is TextLayerInfo);
         }
@@ -70,13 +68,12 @@ namespace Psd2uGui.Editor
         }
     }
 
-    class ImageLayerComponent : LayerComponent
+    internal class ImageLayerComponent : LayerComponent
     {
-        Sprite sprite;
+        private readonly Sprite sprite;
 
-        public ImageLayerComponent(string name, string path, Rect rect, Sprite sprite)
+        public ImageLayerComponent(string name, string path, Rect rect, Sprite sprite) : base(name, path, rect)
         {
-            SetParameter(name, path, rect);
             this.sprite = sprite;
         }
 
@@ -96,14 +93,15 @@ namespace Psd2uGui.Editor
         }
     }
 
-    class ButtonLayerComponent : LayerComponent
+    internal class ButtonLayerComponent : LayerComponent
     {
-        Sprite normal;
-        Sprite highlighted;
-        Sprite pressed;
-        Sprite disabled;
+        readonly Sprite normal;
+        readonly Sprite highlighted;
+        readonly Sprite pressed;
+        readonly Sprite disabled;
 
         public ButtonLayerComponent(string name, string path, IEnumerable<Layer> layers, ButtonParameter param, Func<Layer, Sprite> getSprite)
+            : base(name, path, layers.First().Rect)
         {
             var n = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.NormalPattern));
             var p = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.PressedPattern));
@@ -114,8 +112,6 @@ namespace Psd2uGui.Editor
             highlighted = getSprite(h);
             pressed = getSprite(p);
             disabled = getSprite(d);
-
-            SetParameter(name, path, n.Rect);
         }
 
         public override void Create(RectTransform rect)
@@ -140,20 +136,19 @@ namespace Psd2uGui.Editor
         }
     }
 
-    class ToggleLayerComponent : LayerComponent
+    internal class ToggleLayerComponent : LayerComponent
     {
-        Sprite background;
-        Sprite checkmark;
+        readonly Sprite background;
+        readonly Sprite checkmark;
 
         public ToggleLayerComponent(string name, string path, IEnumerable<Layer> layers, ToggleParameter param, Func<Layer, Sprite> getSprite)
+            : base(name, path, layers.FirstOrDefault().Rect)
         {
             var b = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.BackgroundPattern));
             var c = layers.FirstOrDefault(x => Regex.IsMatch(x.Name.ToLower(), param.CheckmarkPattern));
 
             background = getSprite(b);
             checkmark = getSprite(c);
-
-            SetParameter(name, path, b.Rect);
         }
 
         public override void Create(RectTransform rect)
