@@ -37,12 +37,15 @@ namespace Psd2uGui.Editor
 
     internal class TextLayerComponent : LayerComponent
     {
+        private readonly Vector2 size;
         private readonly TextLayerInfo textInfo;
         private readonly Font font;
 
         public TextLayerComponent(string name, string path, Layer layer, Font font) : base(name, path, layer.Rect)
         {
             this.font = font;
+
+            size = layer.Rect.size;
             textInfo = (TextLayerInfo)layer.AdditionalInfo.FirstOrDefault(x => x is TextLayerInfo);
         }
 
@@ -62,9 +65,20 @@ namespace Psd2uGui.Editor
 
             text.raycastTarget = false;
 
-            // 2回セットしないと正しいサイズにならない
-            rect.sizeDelta = new Vector2(text.preferredWidth, text.preferredHeight);
-            rect.sizeDelta = new Vector2(text.preferredWidth, text.preferredHeight);
+            // NOTE : 2回セットしないと正しいサイズにならない
+            // NOTE : Layerサイズぴったりだと表示されないので少しだけ広げる
+            rect.sizeDelta = size + Vector2.one * 5;
+            rect.sizeDelta = size + Vector2.one * 5;
+
+            // NOTE : 表示領域を広げただけ位置がずれるので補正する
+            if (text.alignment == TextAnchor.UpperRight || text.alignment == TextAnchor.MiddleRight || text.alignment == TextAnchor.LowerRight)
+            {
+                rect.anchoredPosition += Vector2.left * 2.5f;
+            }
+            if (text.alignment == TextAnchor.UpperLeft || text.alignment == TextAnchor.MiddleLeft || text.alignment == TextAnchor.LowerLeft)
+            {
+                rect.anchoredPosition += Vector2.right * 2.5f;
+            }
         }
     }
 
