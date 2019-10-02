@@ -65,9 +65,7 @@ namespace Psd2uGui.Editor
 
             text.raycastTarget = false;
 
-            // NOTE : 2回セットしないと正しいサイズにならない
             // NOTE : Layerサイズぴったりだと表示されないので少しだけ広げる
-            rect.sizeDelta = size + Vector2.one * 5;
             rect.sizeDelta = size + Vector2.one * 5;
 
             // NOTE : 表示領域を広げただけ位置がずれるので補正する

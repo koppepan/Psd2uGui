@@ -175,6 +175,7 @@ namespace Psd2uGui.Editor
             }
 
             var root = GameObject.Find(originTexture.name);
+            DestroyImmediate(root);
             if (root == null)
             {
                 root = new GameObject(originTexture.name, typeof(RectTransform));
